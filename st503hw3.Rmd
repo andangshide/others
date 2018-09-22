@@ -1,0 +1,107 @@
+---
+title: "ST503 hw3 Shan Yang"
+output: html_notebook
+---
+##4.1
+(a)
+```{r}
+library(faraway)
+prostate<-prostate
+head(prostate)
+```
+```{r}
+oprostate<-lm(lpsa~lcavol+lweight+age+lbph+svi+lcp+gleason+pgg45,data = prostate)
+xnew<-data.frame(lcavol=1.44692,lweight=3.62301,age=65,lbph=.3001,svi=0,lcp=-.79851,gleason=7,pgg45=15) #new x values
+predict(oprostate,newdata = data.frame(xnew),interval = "prediction")
+```
+We can read from the output, the CI for prediction is (.9647,3.8134)
+
+(b)
+```{r}
+xnew2<-data.frame(lcavol=1.44692,lweight=3.62301,age=20,lbph=.3001,svi=0,lcp=-.79851,gleason=7,pgg45=15) 
+predict(oprostate,newdata = data.frame(xnew2),interval = "prediction")
+```
+```{r}
+mean(prostate$age)
+```
+We can see the mean of age for the sample data is around 64, and since the regression line must go through the mean of age, but will vary because of the estimator of beta, which is the slope. So farer it is from the mean, the CI tends to be wider.
+(c)
+```{r}
+sumary(oprostate)
+```
+```{r}
+xnew3<-data.frame(lcavol=1.44692,lweight=3.62301,age=0,lbph=0,svi=0,lcp=0,gleason=0,pgg45=0) 
+predict(oprostate,newdata = data.frame(xnew3),interval = "prediction")
+```
+PI becomes larger. I would prefer the first one, because it is having a relatively narrow CI, with makes sense for prediciton.
+
+##4.2
+```{r}
+teengamb<-teengamb
+head(teengamb)
+```
+
+```{r}
+oteengamb<-lm(gamble~sex+status+income+verbal,data = teengamb)
+sumary(oteengamb)
+```
+```{r}
+gamb.matrix<-data.frame(model.matrix(oteengamb)) #get the X matrix in regression
+male.matrix<-subset(gamb.matrix,sex==0)
+x.newmale<-apply(male.matrix,2,median) #get the typical male data
+x.newmale
+```
+```{r}
+predict(oteengamb,newdata = data.frame(t(x.newmale)),interval = "prediction")
+```
+```{r}
+x.newmale2<-apply(male.matrix,2,max) #get the max male data
+x.newmale2
+```
+```{r}
+predict(oteengamb,newdata = data.frame(t(x.newmale2)),interval = "prediction")
+```
+The second interval is wider since the more far it is from the "center" of X range, it will be more uncertainty in the estimation of beta.
+
+(c)
+```{r}
+loteengamb<-lm(sqrt(gamble)~sex+status+income+verbal,data = teengamb)
+predict(loteengamb,newdata = data.frame(t(x.newmale)),interval = "prediction")
+```
+
+(d)
+```{r}
+xnew.female<-data.frame(sex=1,status=20,income=1,verbal=10)
+predict(loteengamb,newdata = xnew.female,interval = "prediction")
+```
+```{r}
+
+apply(subset(gamb.matrix,sex==1),2,mean)
+apply(subset(gamb.matrix,sex==1),2,median)
+apply(subset(gamb.matrix,sex==1),2,max)
+apply(subset(gamb.matrix,sex==1),2,min)
+```
+The data is too extreme?
+
+##6.1
+```{r}
+sat<-sat
+head(sat)
+```
+
+```{r}
+osat<-lm(total~expend+ratio+salary+takers+verbal+math,data = sat)
+sat.hat<-osat$fitted.values
+sat.r<-rstandard(osat)
+```
+(a) constant
+```{r}
+plot(sat.r,xlab = "Fitted values",ylab = "standardized residuals",ylim = c(-2,2))
+abline(h=0)
+```
+(b)Normality
+```{r}
+hist(sat.r, freq=FALSE, col="gray", border="white")
+qqnorm(sat.r,ylim = c(-2,2)); qqline(sat.r)
+```
+A little bit long tail?
